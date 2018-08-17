@@ -16,6 +16,7 @@ package clientv3
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -292,7 +293,7 @@ func (w *watcher) Watch(ctx context.Context, key string, opts ...OpOption) Watch
 	case <-wr.ctx.Done():
 	case <-donec:
 		if wgs.closeErr != nil {
-			closeCh <- WatchResponse{closeErr: wgs.closeErr}
+			closeCh <- WatchResponse{Canceled: true, closeErr: wgs.closeErr}
 			break
 		}
 		// retry; may have dropped stream from no ctxs
@@ -307,7 +308,7 @@ func (w *watcher) Watch(ctx context.Context, key string, opts ...OpOption) Watch
 		case <-ctx.Done():
 		case <-donec:
 			if wgs.closeErr != nil {
-				closeCh <- WatchResponse{closeErr: wgs.closeErr}
+				closeCh <- WatchResponse{Canceled: true, closeErr: wgs.closeErr}
 				break
 			}
 			// retry; may have dropped stream from no ctxs
@@ -353,7 +354,9 @@ func (w *watcher) closeStream(wgs *watchGrpcStream) {
 }
 
 func (w *watchGrpcStream) addSubstream(resp *pb.WatchResponse, ws *watcherStream) {
-	if resp.WatchId == -1 {
+	// check watch ID for backward compatibility (<= v3.3)
+	if resp.WatchId == -1 || (resp.Canceled && resp.CancelReason != "") {
+		w.closeErr = v3rpc.Error(errors.New(resp.CancelReason))
 		// failed; no channel
 		close(ws.recvc)
 		return
@@ -379,7 +382,7 @@ func (w *watchGrpcStream) closeSubstream(ws *watcherStream) {
 	}
 	// close subscriber's channel
 	if closeErr := w.closeErr; closeErr != nil && ws.initReq.ctx.Err() == nil {
-		go w.sendCloseSubstream(ws, &WatchResponse{closeErr: w.closeErr})
+		go w.sendCloseSubstream(ws, &WatchResponse{Canceled: true, closeErr: w.closeErr})
 	} else if ws.outc != nil {
 		close(ws.outc)
 	}
