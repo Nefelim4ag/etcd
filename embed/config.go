@@ -48,6 +48,7 @@ const (
 	DefaultName                  = "default"
 	DefaultMaxSnapshots          = 5
 	DefaultMaxWALs               = 5
+	DefaultMinWALSize            = 64 * 1000 * 1000
 	DefaultMaxTxnOps             = uint(128)
 	DefaultMaxRequestBytes       = 1.5 * 1024 * 1024
 	DefaultGRPCKeepAliveMinTime  = 5 * time.Second
@@ -98,6 +99,7 @@ type Config struct {
 	WalDir         string `json:"wal-dir"`
 	MaxSnapFiles   uint   `json:"max-snapshots"`
 	MaxWalFiles    uint   `json:"max-wals"`
+	MinWalSize     int64  `json:"min-wal-size"`
 	Name           string `json:"name"`
 	SnapCount      uint64 `json:"snapshot-count"`
 
@@ -263,6 +265,7 @@ func NewConfig() *Config {
 		CorsInfo:                   &cors.CORSInfo{},
 		MaxSnapFiles:               DefaultMaxSnapshots,
 		MaxWalFiles:                DefaultMaxWALs,
+		MinWalSize:                 DefaultMinWALSize,
 		Name:                       DefaultName,
 		SnapCount:                  etcdserver.DefaultSnapCount,
 		MaxTxnOps:                  DefaultMaxTxnOps,
@@ -273,17 +276,17 @@ func NewConfig() *Config {
 		TickMs:                     100,
 		ElectionMs:                 1000,
 		InitialElectionTickAdvance: true,
-		LPUrls:              []url.URL{*lpurl},
-		LCUrls:              []url.URL{*lcurl},
-		APUrls:              []url.URL{*apurl},
-		ACUrls:              []url.URL{*acurl},
-		ClusterState:        ClusterStateFlagNew,
-		InitialClusterToken: "etcd-cluster",
-		StrictReconfigCheck: DefaultStrictReconfigCheck,
-		LogOutput:           DefaultLogOutput,
-		Metrics:             "basic",
-		EnableV2:            DefaultEnableV2,
-		AuthToken:           "simple",
+		LPUrls:                     []url.URL{*lpurl},
+		LCUrls:                     []url.URL{*lcurl},
+		APUrls:                     []url.URL{*apurl},
+		ACUrls:                     []url.URL{*acurl},
+		ClusterState:               ClusterStateFlagNew,
+		InitialClusterToken:        "etcd-cluster",
+		StrictReconfigCheck:        DefaultStrictReconfigCheck,
+		LogOutput:                  DefaultLogOutput,
+		Metrics:                    "basic",
+		EnableV2:                   DefaultEnableV2,
+		AuthToken:                  "simple",
 	}
 	cfg.InitialCluster = cfg.InitialClusterFromName(cfg.Name)
 	return cfg

@@ -153,6 +153,7 @@ func StartEtcd(inCfg *Config) (e *Etcd, err error) {
 		SnapCount:                  cfg.SnapCount,
 		MaxSnapFiles:               cfg.MaxSnapFiles,
 		MaxWALFiles:                cfg.MaxWalFiles,
+		MinWalSize:                 cfg.MinWalSize,
 		InitialPeerURLsMap:         urlsmap,
 		InitialClusterToken:        token,
 		DiscoveryURL:               cfg.Durl,
