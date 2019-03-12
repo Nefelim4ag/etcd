@@ -276,6 +276,9 @@ func NewServer(cfg ServerConfig) (srv *EtcdServer, err error) {
 	}
 
 	haveWAL := wal.Exist(cfg.WALDir())
+	if cfg.MinWalSize > 0 {
+		wal.SegmentSizeBytes = cfg.MinWalSize
+	}
 
 	if err = fileutil.TouchDirAll(cfg.SnapDir()); err != nil {
 		plog.Fatalf("create snapshot directory error: %v", err)

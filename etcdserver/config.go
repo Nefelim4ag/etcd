@@ -41,6 +41,7 @@ type ServerConfig struct {
 	SnapCount           uint64
 	MaxSnapFiles        uint
 	MaxWALFiles         uint
+	MinWalSize          int64
 	InitialPeerURLsMap  types.URLsMap
 	InitialClusterToken string
 	NewCluster          bool
